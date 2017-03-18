@@ -1,13 +1,14 @@
 package com.LinkSaver.app;
 
-/**
- * Hello world!
- *
- */
-public class App 
+import io.vertx.core.Vertx;
+
+public class App
 {
-    public static void main( String[] args )
-    {
-        System.out.println( "Hello Worlds!" );
-    }
+	   public static void main(String[] args) {
+		    Vertx.vertx().deployVerticle(Server.class.getName(), e -> {
+		    	System.out.println("server started");
+		    	System.out.println(e.result());
+		    });
+		    	
+	  }
 }
