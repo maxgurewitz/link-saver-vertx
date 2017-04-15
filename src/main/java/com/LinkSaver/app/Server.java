@@ -2,6 +2,7 @@ package com.LinkSaver.app;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
+import io.vertx.core.http.HttpServer;
 
 public class Server extends AbstractVerticle {
 
@@ -9,9 +10,9 @@ public class Server extends AbstractVerticle {
 	public void start(Future<Void> fut) {
 		int port = config().getInteger("http.port");
 
-		vertx.createHttpServer().requestHandler(r -> {
-			r.response().end("<h1>Hello from my first " + "Vert.x 3 application</h1>");
-		}).listen(port, result -> {
+		HttpServer httpServer = vertx.createHttpServer();
+
+		httpServer.listen(port, result -> {
 			if (result.succeeded()) {
 				fut.complete();
 			} else {

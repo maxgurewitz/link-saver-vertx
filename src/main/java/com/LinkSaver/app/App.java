@@ -6,15 +6,16 @@ import io.vertx.core.json.JsonObject;
 
 public class App {
 	private static final int DEFAULT_PORT = 8080;
+	private static final String DEFAULT_ENV = "development";
 
 	public static void main(String[] args) {
-		JsonObject config = new JsonObject();
+		String systemPort = System.getenv("PORT");
+		String systemEnv = System.getenv("ENV");
 
-		String portEnv = System.getenv("PORT");
+		int port = systemPort != null ? Integer.parseInt(systemPort) : DEFAULT_PORT;
+		String env = systemEnv != null ? systemEnv : DEFAULT_ENV;
 
-		int port = portEnv != null ? Integer.parseInt(portEnv) : DEFAULT_PORT;
-
-		config.put("http.port", port);
+		JsonObject config = new JsonObject().put("http.port", port).put("env", env);
 
 		DeploymentOptions options = new DeploymentOptions().setConfig(config);
 
