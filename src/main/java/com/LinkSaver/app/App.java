@@ -19,7 +19,9 @@ public class App {
 
 		DeploymentOptions options = new DeploymentOptions().setConfig(config);
 
-		Vertx.vertx().deployVerticle(Server.class.getName(), options, e -> {
+		Vertx vertx = Vertx.vertx();
+
+		vertx.deployVerticle(Server.class.getName(), options, e -> {
 			if (e.failed()) {
 				System.out.println(e.cause());
 			} else {
