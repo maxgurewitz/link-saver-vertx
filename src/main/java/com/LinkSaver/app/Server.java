@@ -3,9 +3,7 @@ package com.LinkSaver.app;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.ErrorHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.sockjs.BridgeEventType;
@@ -19,7 +17,7 @@ public class Server extends AbstractVerticle {
 
 	@Override
 	public void start(Future<Void> fut) {
-		int port = config().getInteger("http.port");
+	    Settings settings = Settings.singleton;
 
 		HttpServer httpServer = vertx.createHttpServer();
 
@@ -33,25 +31,25 @@ public class Server extends AbstractVerticle {
 
 		httpServer.requestHandler(router::accept);
 
-		httpServer.listen(port, result -> {
+		httpServer.listen(settings.port, result -> {
 			if (result.succeeded()) {
-				EventBus eb = vertx.eventBus();
-				
-				eb.consumer("create-user", message -> {
-					UserService.create().handle(res -> {
-						if (res.failed()) {
-							message.fail(res.cause().toString());
-						} else {
-							message.reply(res.result());
-						}
-					});
-				});
-
 				fut.complete();
 			} else {
 				fut.fail(result.cause());
 			}
 		});
+
+        EventBus eb = vertx.eventBus();
+        
+        eb.consumer("create-user", message -> {
+            UserService.create().setHandler(res -> {
+                if (res.failed()) {
+                    message.fail(0, res.cause().toString());
+                } else {
+                    message.reply(res.result().toString());
+                }
+            });
+        });
 	}
 
 	private SockJSHandler eventBusHandler() {
