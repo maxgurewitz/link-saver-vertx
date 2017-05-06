@@ -38,8 +38,13 @@ public class Server extends AbstractVerticle {
 				EventBus eb = vertx.eventBus();
 				
 				eb.consumer("create-user", message -> {
-					System.out.println("create-user: " + message.body());			
-					message.reply("{ \"name\": \"max\" }");
+					UserService.create().handle(res -> {
+						if (res.failed()) {
+							message.fail(res.cause().toString());
+						} else {
+							message.reply(res.result());
+						}
+					});
 				});
 
 				fut.complete();
