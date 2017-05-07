@@ -1,5 +1,8 @@
 package com.LinkSaver.app;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServer;
@@ -13,7 +16,10 @@ import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.core.eventbus.EventBus;
 
 public class Server extends AbstractVerticle {
+
 	private static final String[] PERMITTED_ADDRESSES = { "create-user" };
+
+    private static ObjectMapper om = new ObjectMapper();
 
 	@Override
 	public void start(Future<Void> fut) {
@@ -42,14 +48,26 @@ public class Server extends AbstractVerticle {
         EventBus eb = vertx.eventBus();
         
         eb.consumer("create-user", message -> {
-            UserService.create().setHandler(res -> {
+            UserService.create().compose(Server::toJsonFuture).setHandler(res -> {
                 if (res.failed()) {
                     message.fail(0, res.cause().toString());
                 } else {
-                    message.reply(res.result().toString());
+                    message.reply(res.result());
                 }
             });
         });
+	}
+	
+	private static Future<String> toJsonFuture(Object obj) {
+	    Future<String> fut;
+
+	    try {
+	        fut = Future.succeededFuture(om.writeValueAsString(obj));
+        } catch (JsonProcessingException e) {
+            fut = Future.failedFuture(e);
+        }
+	    
+	    return fut;
 	}
 
 	private SockJSHandler eventBusHandler() {
